@@ -1,5 +1,11 @@
 # Tests for rco: The Code Optimizer
 
+## Background
+
+The basis for designing my column extraction optimiser can be seen in the microbenchmark plot of different column extraction method
+
+![alt text](https://github.com/hinduBale/TextAnalysisBasics/blob/master/basis.PNG)
+
 ## Easy Test :
 
 Check out my easy test solution [here](https://hindubale.github.io/rco_test/easy_test)
