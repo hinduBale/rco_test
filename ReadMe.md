@@ -24,6 +24,6 @@ first run the parse.R script and then run the column_extractor.R script
 
 ![alt text](https://github.com/hinduBale/rco_test/blob/master/Medium%20Test/output.PNG)
 
-## Hard Test(To-Do)
+## Hard Test
  
- 
+ Check out my [Hard Test solutions](https://github.com/hinduBale/rco). I've added a column optimiser named opt_column_extractor.R in the R folder, it's tests and also a RMarkdown vignette.
