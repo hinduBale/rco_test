@@ -26,4 +26,4 @@ first run the parse.R script and then run the column_extractor.R script
 
 ## Hard Test
  
- Check out my [Hard Test solutions](https://github.com/hinduBale/rco). I've added a column optimiser named opt_column_extractor.R in the R folder, it's tests and also a RMarkdown vignette.
+ Check out my [Hard Test solutions](https://github.com/hinduBale/rco). I've added a column optimiser named opt_column_extractor.R in the R folder, it's tests and also a RMarkdown vignette. Since, it was passing all build tests, I've opened a [PR at the official rco repo](https://github.com/jcrodriguez1989/rco/pull/147)
