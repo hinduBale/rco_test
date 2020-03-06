@@ -270,6 +270,8 @@ for(l in seq_len(nrow(next_lines)-1))
   target_id <- append(target_id, max(resultant_fpd[resultant_fpd$pos_id >= next_lines[l, ]$pos_id & resultant_fpd$pos_id < next_lines[l+1, ]$pos_id, ]$pos_id))
 }
 
+target_id <- append(target_id, resultant_fpd[nrow(resultant_fpd), ]$pos_id, )
+
 m <- 1
 for(m in seq_len(length(target_id)))
 {
@@ -277,6 +279,8 @@ for(m in seq_len(length(target_id)))
 }
 
 resultant_fpd <-resultant_fpd[!duplicated(resultant_fpd), ]
+
+
 
 optimized_text <- deparse_data(resultant_fpd)
 optimized_text

@@ -3,7 +3,7 @@
 #' Performs optimisations for value extraction throughout the code.
 #' Carefully examine the results after running this function!
 #'
-#' @param texts A list of character vectors with the code to optimize.
+#' @param code A list of character vectors with the code to optimize.
 #' 
 #' @examples
 #' code <- paste(
@@ -15,321 +15,321 @@
 #' "yo",
 #' "mtcars[[c(11,32)]]",
 #' ".subset2(mtcars, 11)[32]",
-#'  sep = "\n")
+#'  sep = "\n"
 #'  )
-#' cat(opt_column_extractor(list(code))$codes[[1]])
+#' cat(opt_value_extractor(list(code))$codes[[1]])
 #' @export
-opt_value_extractor <- function(texts) {
+opt_value_extractor <- function(code) {
   res <- list()
-  res$codes <- lapply(texts, ve_one_file)
+  res$codes <- lapply(code, ve_one_file)
   return (res)
 }
 
 # Executes efficient value selection/extraction on one text of code.
 #
-# @param text A character vector with code to optimize.
+# @param code A character vector with code to optimize.
 #
-ve_one_file <- function(texts)
+ve_one_file <- function(code)
 {
-  fpd <- parse_text(texts)
-  fpd <- flatten_leaves(fpd)
-  res_fpd <- ve_one_fpd(fpd)
-  return (deparse_data(res_fpd))
+  flatten_pd <- parse_text(code)
+  flatten_pd <- flatten_leaves(flatten_pd)
+  result_flatten_pd <- ve_one_flatten_pd(flatten_pd)
+  return (deparse_data(result_flatten_pd))
 }
 
 
 # Executes searching operations to find dollar sign.
-# @param fpd A flatten parsed data data.frame.
-# @param node_id Id of the node to be examined
+# @param flatten_pd A flatten parsed data data.frame.
+# @param nodal_id Id of the node to be examined
 #
-has_dollar_sign <- function(fpd, node_id)
+Has_dollar_sign <- function(flatten_pd, nodal_id)
 {
-  father <- node_id
-  mother <- fpd[fpd$parent == node_id &is.na(fpd$next_lines) & is.na(fpd$next_spaces) & is.na(fpd$prev_spaces), ]$id
-  test_dollar_df <- fpd[fpd$parent == father | fpd$parent == mother, ]
-  dollar <- match("'$'", test_dollar_df$token)
-  dollar_flag <- (!(is.na(dollar)))
-  return (dollar_flag)
+  father <- nodal_id
+  mother <- flatten_pd[flatten_pd$parent == nodal_id &is.na(flatten_pd$next_lines) & is.na(flatten_pd$next_spaces) & is.na(flatten_pd$prev_spaces), ]$id
+  Test_dollar_df <- flatten_pd[flatten_pd$parent == father | flatten_pd$parent == mother, ]
+  Dollar <- match("'$'", Test_dollar_df$token)
+  Dollar_Flag <- (!(is.na(Dollar)))
+  return (Dollar_Flag)
 }
 
 # Executes searching operations related to dollar sign to find dataset.
 #
-# @param fpd A flatten parsed data data.frame.
-# @param node_id Id of the node to be examined
+# @param flatten_pd A flatten parsed data data.frame.
+# @param nodal_id Id of the node to be examined
 #
-dollar_dataset <- function(fpd, node_id)
+Dollar_dataset <- function(flatten_pd, nodal_id)
 {
-  father <- node_id
-  mother <- fpd[fpd$parent == node_id &is.na(fpd$next_lines) & is.na(fpd$next_spaces) & is.na(fpd$prev_spaces), ]$id
-  dollar_loc <- fpd[(fpd$parent == father | fpd$parent == mother) & fpd$token == "'$'", ]
-  replace_df_dollar <- fpd[fpd$pos_id < dollar_loc$pos_id & (fpd$parent == father | fpd$parent == mother) & fpd$token == "SYMBOL", ]$text
-  return (replace_df_dollar)
+  father <- nodal_id
+  mother <- flatten_pd[flatten_pd$parent == nodal_id &is.na(flatten_pd$next_lines) & is.na(flatten_pd$next_spaces) & is.na(flatten_pd$prev_spaces), ]$id
+  Dollar_loc <- flatten_pd[(flatten_pd$parent == father | flatten_pd$parent == mother) & flatten_pd$token == "'$'", ]
+  Replace_df_dollar <- flatten_pd[flatten_pd$pos_id < Dollar_loc$pos_id & (flatten_pd$parent == father | flatten_pd$parent == mother) & flatten_pd$token == "SYMBOL", ]$text
+  return (Replace_df_dollar)
 }
 
 # Executes searching operations related to dollar sign to find column number.
 #
-# @param fpd A flatten parsed data data.frame.
-# @param node_id Id of the node to be examined
+# @param flatten_pd A flatten parsed data data.frame.
+# @param nodal_id Id of the node to be examined
 #
-dollar_colnum <- function(fpd, node_id)
+Dollar_colnum <- function(flatten_pd, nodal_id)
 {
-  father <- node_id
-  mother <- fpd[fpd$parent == node_id &is.na(fpd$next_lines) & is.na(fpd$next_spaces) & is.na(fpd$prev_spaces), ]$id
-  dollar_loc_colnum <- fpd[(fpd$parent == father | fpd$parent == mother) & fpd$token == "'$'", ]
-  replace_colname_dollar <- fpd[fpd$pos_id > dollar_loc_colnum$pos_id & (fpd$parent == father | fpd$parent == mother) & fpd$token == "SYMBOL", ]$text
-  return (which(colnames(mtcars) == replace_colname_dollar[1]))
+  father <- nodal_id
+  mother <- flatten_pd[flatten_pd$parent == nodal_id &is.na(flatten_pd$next_lines) & is.na(flatten_pd$next_spaces) & is.na(flatten_pd$prev_spaces), ]$id
+  Dollar_loc_colnum <- flatten_pd[(flatten_pd$parent == father | flatten_pd$parent == mother) & flatten_pd$token == "'$'", ]
+  Replace_colname_dollar <- flatten_pd[flatten_pd$pos_id > Dollar_loc_colnum$pos_id & (flatten_pd$parent == father | flatten_pd$parent == mother) & flatten_pd$token == "SYMBOL", ]$text
+  return (which(colnames(mtcars) == Replace_colname_dollar[1]))
 }
 
 
 # Executes searching operations related to dollar sign to find row number.
 #
-# @param fpd A flatten parsed data data.frame.
-# @param node_id Id of the node to be examined
+# @param flatten_pd A flatten parsed data data.frame.
+# @param nodal_id Id of the node to be examined
 #
-dollar_rownum <- function(fpd, node_id)
+Dollar_rownum <- function(flatten_pd, nodal_id)
 {
-  father <- node_id
-  mother <- fpd[fpd$parent == node_id &is.na(fpd$next_lines) & is.na(fpd$next_spaces) & is.na(fpd$prev_spaces), ]$id
-  replace_rowname_dollar <- fpd[(fpd$parent == father | fpd$parent == mother) & fpd$token == "NUM_CONST", ]$text
-  return (as.numeric(replace_rowname_dollar))
+  father <- nodal_id
+  mother <- flatten_pd[flatten_pd$parent == nodal_id &is.na(flatten_pd$next_lines) & is.na(flatten_pd$next_spaces) & is.na(flatten_pd$prev_spaces), ]$id
+  Replace_rowname_dollar <- flatten_pd[(flatten_pd$parent == father | flatten_pd$parent == mother) & flatten_pd$token == "NUM_CONST", ]$text
+  return (as.numeric(Replace_rowname_dollar))
 }
 
 # Executes searching operations related to double square brackets(LBB) to find dataset.
 #
-# @param fpd A flatten parsed data data.frame.
-# @param node_id Id of the node to be examined
+# @param flatten_pd A flatten parsed data data.frame.
+# @param nodal_id Id of the node to be examined
 #
-has_square_brackets <- function(fpd, node_id)
+Has_square_brackets <- function(flatten_pd, nodal_id)
 {
-  father <- node_id
-  mother <- fpd[fpd$parent == node_id &is.na(fpd$next_lines) & is.na(fpd$next_spaces) & is.na(fpd$prev_spaces), ]$id
-  test_square <- fpd[fpd$parent == father | fpd$parent == mother, ]
-  square <- match("LBB", test_square$token)
-  square_flag <- (!(is.na(square)))
-  return (square_flag)
+  father <- nodal_id
+  mother <- flatten_pd[flatten_pd$parent == nodal_id &is.na(flatten_pd$next_lines) & is.na(flatten_pd$next_spaces) & is.na(flatten_pd$prev_spaces), ]$id
+  Test_square <- flatten_pd[flatten_pd$parent == father | flatten_pd$parent == mother, ]
+  Square <- match("LBB", Test_square$token)
+  Square_flag <- (!(is.na(Square)))
+  return (Square_flag)
 }
 
 # Executes searching operations related to double square brackets(LBB) to find dataset.
 #
-# @param fpd A flatten parsed data data.frame.
-# @param node_id Id of the node to be examined
+# @param flatten_pd A flatten parsed data data.frame.
+# @param nodal_id Id of the node to be examined
 #
-square_dataset <- function(fpd, node_id)
+Square_dataset <- function(flatten_pd, nodal_id)
 {
-  father <- node_id
-  mother <- fpd[fpd$parent == node_id &is.na(fpd$next_lines) & is.na(fpd$next_spaces) & is.na(fpd$prev_spaces), ]$id
-  square_loc <- fpd[(fpd$parent == father | fpd$parent == mother) & fpd$token == "LBB", ]
-  replace_df_square <- fpd[fpd$pos_id < square_loc$pos_id & (fpd$parent == father | fpd$parent == mother) & fpd$token == "SYMBOL", ]$text
-  return (replace_df_square)
+  father <- nodal_id
+  mother <- flatten_pd[flatten_pd$parent == nodal_id &is.na(flatten_pd$next_lines) & is.na(flatten_pd$next_spaces) & is.na(flatten_pd$prev_spaces), ]$id
+  Square_loc <- flatten_pd[(flatten_pd$parent == father | flatten_pd$parent == mother) & flatten_pd$token == "LBB", ]
+  Replace_df_square <- flatten_pd[flatten_pd$pos_id < Square_loc$pos_id & (flatten_pd$parent == father | flatten_pd$parent == mother) & flatten_pd$token == "SYMBOL", ]$text
+  return (Replace_df_square)
 }
 
 # Executes searching operations related to double square brackets(LBB) to find column number.
 #
-# @param fpd A flatten parsed data data.frame.
-# @param node_id Id of the node to be examined
+# @param flatten_pd A flatten parsed data data.frame.
+# @param nodal_id Id of the node to be examined
 #
-square_colnum <- function(fpd, node_id)
+Square_colnum <- function(flatten_pd, nodal_id)
 {
-  father <- node_id
-  mother <- fpd[fpd$parent == node_id &is.na(fpd$next_lines) & is.na(fpd$next_spaces) & is.na(fpd$prev_spaces), ]$id
-  square_loc_colnum <- fpd[(fpd$parent == father | fpd$parent == mother) & fpd$token == "LBB", ]
-  replace_colnum_square <- fpd[fpd$pos_id > square_loc_colnum$pos_id & (fpd$parent == father | fpd$parent == mother) & fpd$token == "NUM_CONST", ]$text
-  return (replace_colnum_square[1])
+  father <- nodal_id
+  mother <- flatten_pd[flatten_pd$parent == nodal_id &is.na(flatten_pd$next_lines) & is.na(flatten_pd$next_spaces) & is.na(flatten_pd$prev_spaces), ]$id
+  Square_loc_colnum <- flatten_pd[(flatten_pd$parent == father | flatten_pd$parent == mother) & flatten_pd$token == "LBB", ]
+  Replace_colnum_square <- flatten_pd[flatten_pd$pos_id > Square_loc_colnum$pos_id & (flatten_pd$parent == father | flatten_pd$parent == mother) & flatten_pd$token == "NUM_CONST", ]$text
+  return (Replace_colnum_square[1])
 }
 
 # Executes searching operations related to double square brackets(LBB) to find row number.
 #
-# @param fpd A flatten parsed data data.frame.
-# @param node_id Id of the node to be examined
+# @param flatten_pd A flatten parsed data data.frame.
+# @param nodal_id Id of the node to be examined
 #
-square_rownum <- function(fpd, node_id)
+Square_rownum <- function(flatten_pd, nodal_id)
 {
-  father <- node_id
-  mother <- fpd[fpd$parent == node_id &is.na(fpd$next_lines) & is.na(fpd$next_spaces) & is.na(fpd$prev_spaces), ]$id
-  square_loc_colnum <- fpd[(fpd$parent == father | fpd$parent == mother) & fpd$token == "LBB", ]
-  replace_colnum_square <- fpd[fpd$pos_id > square_loc_colnum$pos_id & (fpd$parent == father | fpd$parent == mother) & fpd$token == "NUM_CONST", ]$text
-  return (replace_colnum_square[2])
+  father <- nodal_id
+  mother <- flatten_pd[flatten_pd$parent == nodal_id &is.na(flatten_pd$next_lines) & is.na(flatten_pd$next_spaces) & is.na(flatten_pd$prev_spaces), ]$id
+  Square_loc_colnum <- flatten_pd[(flatten_pd$parent == father | flatten_pd$parent == mother) & flatten_pd$token == "LBB", ]
+  Replace_colnum_square <- flatten_pd[flatten_pd$pos_id > Square_loc_colnum$pos_id & (flatten_pd$parent == father | flatten_pd$parent == mother) & flatten_pd$token == "NUM_CONST", ]$text
+  return (Replace_colnum_square[2])
 }
 
 # Executes searching operations to find single square brackets.
 #
-# @param fpd A flatten parsed data data.frame.
-# @param node_id Id of the node to be examined
+# @param flatten_pd A flatten parsed data data.frame.
+# @param nodal_id Id of the node to be examined
 #
-has_single_bracket <- function(fpd, node_id)
+Has_single_bracket <- function(flatten_pd, nodal_id)
 {
-  father <- node_id
-  mother <- fpd[fpd$parent == node_id &is.na(fpd$next_lines) & is.na(fpd$next_spaces) & is.na(fpd$prev_spaces), ]$id
-  test_single_bracket <- fpd[fpd$parent == father, ]
-  single_bracket <- match("'['", test_single_bracket$token)
-  single_bracket_flag <- (!(is.na(single_bracket)))
-  single_bracket_flag1 <- TRUE
+  father <- nodal_id
+  mother <- flatten_pd[flatten_pd$parent == nodal_id &is.na(flatten_pd$next_lines) & is.na(flatten_pd$next_spaces) & is.na(flatten_pd$prev_spaces), ]$id
+  Test_single_bracket <- flatten_pd[flatten_pd$parent == father, ]
+  Single_bracket <- match("'['", Test_single_bracket$token)
+  Single_bracket_flag <- (!(is.na(Single_bracket)))
+  Single_bracket_flag1 <- TRUE
   if(length(mother) > 0L)
-    single_bracket_flag1 <- FALSE
-  return (single_bracket_flag & single_bracket_flag1)
+    Single_bracket_flag1 <- FALSE
+  return (Single_bracket_flag & Single_bracket_flag1)
 }
 
 # Executes searching operations related to single square bracket to find dataset.
 #
-# @param fpd A flatten parsed data data.frame.
-# @param node_id Id of the node to be examined
+# @param flatten_pd A flatten parsed data data.frame.
+# @param nodal_id Id of the node to be examined
 #
-single_dataset <- function(fpd, node_id)
+Single_dataset <- function(flatten_pd, nodal_id)
 {
-  single_loc <- fpd[fpd$parent == node_id & fpd$token == "'['", ]
-  replace_df_single <- fpd[fpd$pos_id < single_loc$pos_id & fpd$parent == node_id & fpd$token == "SYMBOL", ]$text
-  return (replace_df_single)
+  Single_loc <- flatten_pd[flatten_pd$parent == nodal_id & flatten_pd$token == "'['", ]
+  Replace_df_single <- flatten_pd[flatten_pd$pos_id < Single_loc$pos_id & flatten_pd$parent == nodal_id & flatten_pd$token == "SYMBOL", ]$text
+  return (Replace_df_single)
 }
 
 # Executes searching operations related to single square brackets to find column number.
 #
-# @param fpd A flatten parsed data data.frame.
-# @param node_id Id of the node to be examined
+# @param flatten_pd A flatten parsed data data.frame.
+# @param nodal_id Id of the node to be examined
 #
-single_colnum <- function(fpd, node_id)
+Single_colnum <- function(flatten_pd, nodal_id)
 {
-  single_loc_colnum <- fpd[fpd$parent == node_id & fpd$token == "'['", ]
-  replace_colnum_dollar <- fpd[fpd$pos_id > single_loc_colnum$pos_id & fpd$parent == node_id & fpd$token == "NUM_CONST", ]$text
-  return (replace_colnum_dollar[2])
+  Single_loc_colnum <- flatten_pd[flatten_pd$parent == nodal_id & flatten_pd$token == "'['", ]
+  Replace_colnum_dollar <- flatten_pd[flatten_pd$pos_id > Single_loc_colnum$pos_id & flatten_pd$parent == nodal_id & flatten_pd$token == "NUM_CONST", ]$text
+  return (Replace_colnum_dollar[2])
 }
 
 # Executes searching operations related to single square brackets to find row number.
 #
-# @param fpd A flatten parsed data data.frame.
-# @param node_id Id of the node to be examined
+# @param flatten_pd A flatten parsed data data.frame.
+# @param nodal_id Id of the node to be examined
 #
-single_rownum <- function(fpd, node_id)
+Single_rownum <- function(flatten_pd, nodal_id)
 {
-  single_loc_colnum <- fpd[fpd$parent == node_id & fpd$token == "'['", ]
-  replace_colnum_dollar <- fpd[fpd$pos_id > single_loc_colnum$pos_id & fpd$parent == node_id & fpd$token == "NUM_CONST", ]$text
-  return (replace_colnum_dollar[1])
+  Single_loc_colnum <- flatten_pd[flatten_pd$parent == nodal_id & flatten_pd$token == "'['", ]
+  Replace_colnum_dollar <- flatten_pd[flatten_pd$pos_id > Single_loc_colnum$pos_id & flatten_pd$parent == nodal_id & flatten_pd$token == "NUM_CONST", ]$text
+  return (Replace_colnum_dollar[1])
 }
 
-# Executes efficient value selection/extraction of a fpd.
+# Executes efficient value selection/extraction of a flatten_pd.
 #
-# @param fpd A flatten parsed data data.frame.
+# @param flatten_pd A flatten parsed data data.frame.
 #
-ve_one_fpd <- function(fpd)
+ve_one_flatten_pd <- function(flatten_pd)
 {
-  comments_df <- fpd[fpd$parent < 0, ] 
-  fpd <- fpd[fpd$parent >= 0, ] 
-  exam_nodes <- get_roots(fpd)
+  Comment_df <- flatten_pd[flatten_pd$parent < 0, ] 
+  flatten_pd <- flatten_pd[flatten_pd$parent >= 0, ] 
+  examination_nodes <- get_roots(flatten_pd)
   i <- 1
-  final_exam_nodes <- NULL
-  data_frame <- NULL
-  column_name <- NULL
-  row_name <- NULL
-  not_to_edit <- NULL
-  for(i in seq_len(nrow(exam_nodes)))
+  final_examination_nodes <- NULL
+  Data_frame <- NULL
+  Name_Column <- NULL
+  Name_Row <- NULL
+  no_edit_pd <- NULL
+  for(i in seq_len(nrow(examination_nodes)))
   {
-    test_id <- exam_nodes[i, ]$id
-    if(has_dollar_sign(fpd, test_id) == TRUE)
+    test_id <- examination_nodes[i, ]$id
+    if(has_dollar_sign(flatten_pd, test_id) == TRUE)
     {
-      data_frame <- append(data_frame, dollar_dataset(fpd, test_id))
-      column_name <- append(column_name, dollar_colnum(fpd, test_id))
-      row_name <- append(row_name, dollar_rownum(fpd, test_id))
-      final_exam_nodes <- rbind(final_exam_nodes, exam_nodes[i, ])
+      Data_frame <- append(Data_frame, dollar_dataset(flatten_pd, test_id))
+      Name_Column <- append(Name_Column, dollar_colnum(flatten_pd, test_id))
+      Name_Row <- append(Name_Row, dollar_rownum(flatten_pd, test_id))
+      final_examination_nodes <- rbind(final_examination_nodes, examination_nodes[i, ])
     }
-    else if(has_square_brackets(fpd, test_id) == TRUE)
+    else if(has_square_brackets(flatten_pd, test_id) == TRUE)
     {
-      data_frame <- append(data_frame, square_dataset(fpd, test_id))
-      column_name <- append(column_name, square_colnum(fpd, test_id))
-      row_name <- append(row_name, square_rownum(fpd, test_id))
-      final_exam_nodes <- rbind(final_exam_nodes, exam_nodes[i, ])
+      Data_frame <- append(Data_frame, square_dataset(flatten_pd, test_id))
+      Name_Column <- append(Name_Column, square_colnum(flatten_pd, test_id))
+      Name_Row <- append(Name_Row, square_rownum(flatten_pd, test_id))
+      final_examination_nodes <- rbind(final_examination_nodes, examination_nodes[i, ])
     }
-    else if(has_single_bracket(fpd, test_id) == TRUE)
+    else if(has_single_bracket(flatten_pd, test_id) == TRUE)
     {
-      data_frame <- append(data_frame, single_dataset(fpd, test_id))
-      column_name <- append(column_name, single_colnum(fpd, test_id))
-      row_name <- append(row_name, single_rownum(fpd, test_id))
-      final_exam_nodes <- rbind(final_exam_nodes, exam_nodes[i, ])
+      Data_frame <- append(Data_frame, single_dataset(flatten_pd, test_id))
+      Name_Column <- append(Name_Column, single_colnum(flatten_pd, test_id))
+      Name_Row <- append(Name_Row, single_rownum(flatten_pd, test_id))
+      final_examination_nodes <- rbind(final_examination_nodes, examination_nodes[i, ])
     }
     else
     {
-      not_to_edit <- rbind(not_to_edit, exam_nodes[i, ])
+      no_edit_pd <- rbind(no_edit_pd, examination_nodes[i, ])
     }
   }
 
   j <- 1
-  for(j in seq_len(nrow(final_exam_nodes)))
+  for(j in seq_len(nrow(final_examination_nodes)))
   {
-    final_exam_nodes[j, ]$text <- sprintf(".subset2(%s, %s)[%s]", data_frame[j], column_name[j], row_name[j])
+    final_examination_nodes[j, ]$text <- sprintf(".subset2(%s, %s)[%s]", Data_frame[j], Name_Column[j], Name_Row[j])
   }
   
-  not_to_edit <- rbind(not_to_edit, comments_df)
+  no_edit_pd <- rbind(no_edit_pd, Comment_df)
   k <- 1
-  for(k in seq_len(nrow(not_to_edit)))
+  for(k in seq_len(nrow(no_edit_pd)))
   {
-    father <- not_to_edit[k, ]$id
-    mother <- fpd[fpd$parent == not_to_edit[k, ]$id &is.na(fpd$next_lines) & is.na(fpd$next_spaces) & is.na(fpd$prev_spaces), ]$id
+    father <- no_edit_pd[k, ]$id
+    mother <- flatten_pd[flatten_pd$parent == no_edit_pd[k, ]$id &is.na(flatten_pd$next_lines) & is.na(flatten_pd$next_spaces) & is.na(flatten_pd$prev_spaces), ]$id
     if(length(mother) > 0)
-      not_to_edit <- rbind(not_to_edit, fpd[(fpd$parent == father | fpd$parent == mother), ])
-    not_to_edit <- rbind(not_to_edit, fpd[fpd$parent == father, ])
+      no_edit_pd <- rbind(no_edit_pd, flatten_pd[(flatten_pd$parent == father | flatten_pd$parent == mother), ])
+    no_edit_pd <- rbind(no_edit_pd, flatten_pd[flatten_pd$parent == father, ])
   }
   
-  not_to_edit <- not_to_edit[order(not_to_edit$pos_id), ]
+  no_edit_pd <- no_edit_pd[order(no_edit_pd$pos_id), ]
   
   itr <- 1
-  new_fpd <- NULL
+  new_flatten_pd <- NULL
   
-  for(itr in seq_len(nrow(final_exam_nodes)))
+  for(itr in seq_len(nrow(final_examination_nodes)))
   {
-    act_fpd <- final_exam_nodes[itr, ]
-    new_act_fpd <- flatten_leaves(parse_text(act_fpd$text))
+    act_flatten_pd <- final_examination_nodes[itr, ]
+    new_act_flatten_pd <- flatten_leaves(parse_text(act_flatten_pd$text))
     
-    #Backing up the original new_act_fpd
-    new_act_fpd_duplicate <- new_act_fpd
+    #Backing up the original new_act_flatten_pd
+    new_act_flatten_pd_duplicate <- new_act_flatten_pd
     
     #Setting new ids for the newly edited and parsed codes
-    new_act_fpd$id <- paste0(act_fpd$id, "_", new_act_fpd$id)
+    new_act_flatten_pd$id <- paste0(act_flatten_pd$id, "_", new_act_flatten_pd$id)
     
-    #Keeping old parents for new fpd
-    new_act_fpd$parent[new_act_fpd$parent != 0] <- paste0(act_fpd$id, "_", new_act_fpd$parent[new_act_fpd$parent != 0])
-    new_act_fpd$parent[new_act_fpd$parent == 0] <- act_fpd$parent
+    #Keeping old parents for new flatten_pd
+    new_act_flatten_pd$parent[new_act_flatten_pd$parent != 0] <- paste0(act_flatten_pd$id, "_", new_act_flatten_pd$parent[new_act_flatten_pd$parent != 0])
+    new_act_flatten_pd$parent[new_act_flatten_pd$parent == 0] <- act_flatten_pd$parent
     
     #Calling a pre-wriiten rco::function....
-    new_act_fpd$pos_id <- create_new_pos_id(act_fpd, nrow(new_act_fpd), act_fpd$id)
+    new_act_flatten_pd$pos_id <- create_new_pos_id(act_flatten_pd, nrow(new_act_flatten_pd), act_flatten_pd$id)
     
-    #Fixing the next_spaces section of new_fpd
-    new_act_fpd$next_spaces[nrow(new_act_fpd)] <- act_fpd$next_spaces
+    #Fixing the next_spaces section of new_flatten_pd
+    new_act_flatten_pd$next_spaces[nrow(new_act_flatten_pd)] <- act_flatten_pd$next_spaces
     
-    #Fixing the next_lines section of new_fpd
-    new_act_fpd$next_lines[nrow(new_act_fpd)] <- act_fpd$next_lines
+    #Fixing the next_lines section of new_flatten_pd
+    new_act_flatten_pd$next_lines[nrow(new_act_flatten_pd)] <- act_flatten_pd$next_lines
     
-    #Fixing the prev_spaces section of new_fpd
-    new_act_fpd$prev_spaces[which(new_act_fpd$terminal)[[1]]] <- act_fpd$prev_spaces
+    #Fixing the prev_spaces section of new_flatten_pd
+    new_act_flatten_pd$prev_spaces[which(new_act_flatten_pd$terminal)[[1]]] <- act_flatten_pd$prev_spaces
     
-    #Merging the new_fpd and the act_fpd(obtained upon iteration)
-    new_fpd <- rbind(new_fpd, new_act_fpd)
+    #Merging the new_flatten_pd and the act_flatten_pd(obtained upon iteration)
+    new_flatten_pd <- rbind(new_flatten_pd, new_act_flatten_pd)
     
-    #Ordering the new_fpd according to the pos_id
-    new_fpd <- new_fpd[order(new_fpd$pos_id), ]
+    #Ordering the new_flatten_pd according to the pos_id
+    new_flatten_pd <- new_flatten_pd[order(new_flatten_pd$pos_id), ]
   }
   
-  resultant_fpd <- rbind(not_to_edit, new_fpd[order(new_fpd$pos_id), ])
-  resultant_fpd <- resultant_fpd[order(resultant_fpd$pos_id), ]
+  resultant_flatten_pd <- rbind(no_edit_pd, new_flatten_pd[order(new_flatten_pd$pos_id), ])
+  resultant_flatten_pd <- resultant_flatten_pd[order(resultant_flatten_pd$pos_id), ]
   
   #Identifying the lines where the new line character has to be introduced.
-  next_lines <- NULL
-  next_lines <- resultant_fpd[resultant_fpd$parent == 0, ]
-  next_lines <- rbind(next_lines, resultant_fpd[resultant_fpd$parent < 0, ])
-  next_lines <- next_lines[order(next_lines$pos_id), ]
+  next_lines_corpus <- NULL
+  next_lines_corpus <- resultant_flatten_pd[resultant_flatten_pd$parent == 0, ]
+  next_lines_corpus <- rbind(next_lines_corpus, resultant_flatten_pd[resultant_flatten_pd$parent < 0, ])
+  next_lines_corpus <- next_lines_corpus[order(next_lines_corpus$pos_id), ]
 
-  target_id <- NULL
-  resultant_fpd[is.na(resultant_fpd)] <- 0 #Replacing the NAs with zeroes.
+  targeted_id <- NULL
+  resultant_flatten_pd[is.na(resultant_flatten_pd)] <- 0 #Replacing the NAs with zeroes.
   l <- 1
-  for(l in seq_len(nrow(next_lines)-1))
+  for(l in seq_len(nrow(next_lines_corpus)-1))
   {
-    target_id <- append(target_id, max(resultant_fpd[resultant_fpd$pos_id >= next_lines[l, ]$pos_id & resultant_fpd$pos_id < next_lines[l+1, ]$pos_id, ]$pos_id))
+    targeted_id <- append(targeted_id, max(resultant_flatten_pd[resultant_flatten_pd$pos_id >= next_lines_corpus[l, ]$pos_id & resultant_flatten_pd$pos_id < next_lines_corpus[l+1, ]$pos_id, ]$pos_id))
   }
   
   m <- 1
-  for(m in seq_len(length(target_id)))
+  for(m in seq_len(length(targeted_id)))
   {
-    resultant_fpd[which(resultant_fpd$pos_id == target_id[m]), ]$next_lines <- 1
+    resultant_flatten_pd[which(resultant_flatten_pd$pos_id == targeted_id[m]), ]$next_lines <- 1
   }
   
-  resultant_fpd <-resultant_fpd[!duplicated(resultant_fpd), ]
+  resultant_flatten_pd <-resultant_flatten_pd[!duplicated(resultant_flatten_pd), ]
   
-  return (resultant_fpd)
+  return (resultant_flatten_pd)
 }
