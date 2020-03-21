@@ -12,6 +12,8 @@ The basis for designing my column extraction optimiser can be seen in the microb
 
 Check out my easy test solution [here](https://hindubale.github.io/rco_test/easy_test)
 
+The above easy test, seemed quite messy and unclear to me. So, I took another stab at it.Check it out [here](https://rpubs.com/hinduBale/587570) 
+
 ## Medium Test :
 
 To successfully run/check the working of the [column optimiser](https://rpubs.com/IACCancu/462502), head on to the [Medium Test folder](https://github.com/hinduBale/rco_test/tree/master/Medium%20Test) and
