@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Efficient Column Extraction</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Efficient Column Extraction</h1>
+
+
+
+<div id="background" class="section level2">
+<h2>Background</h2>
+<p>Column extraction refers to the act of pulling out the values of a particular column from a given data frame/list/matrix. The below microbenchmark plot clearly shows the vast difference in execution time between <strong>.subset2()</strong> and other methods of column extraction. Therefore, it would make sense to replace other column extraction methods with <strong>.subset2()</strong> since it is a function call while all others are function calls.</p>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>For example, consider the following code:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1">  mtcars[,<span class="dv">11</span>]</a>
+<a class="sourceLine" id="cb1-2" title="2">  mtcars<span class="op">$</span>carb</a>
+<a class="sourceLine" id="cb1-3" title="3">  replace_text &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>)</a>
+<a class="sourceLine" id="cb1-4" title="4">  <span class="kw">.subset2</span>(mtcars, <span class="dv">11</span>)</a></code></pre></div>
+<p>There is nothing wrong with the above code, but as noticed earlier it can be made efficient, if we replace the given column extraction methods with system calls(.subset2()). That is, it can be made more efficient in the following way:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1">  <span class="kw">.subset2</span>(mtcars, <span class="dv">11</span>)</a>
+<a class="sourceLine" id="cb2-2" title="2">  <span class="kw">.subset2</span>(mtcars, <span class="dv">11</span>)</a>
+<a class="sourceLine" id="cb2-3" title="3">  replace_text &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>)</a>
+<a class="sourceLine" id="cb2-4" title="4">  <span class="kw">.subset2</span>(mtcars, <span class="dv">11</span>)</a></code></pre></div>
+</div>
+<div id="implementation" class="section level2">
+<h2>Implementation</h2>
+<p>The <em>opt_column_extractor</em> function of the <em>rco</em> achieves this by, parsing the given code snippet, detecting the usage of column extraction methods/techniques and replacing it with the most appropriate one.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
