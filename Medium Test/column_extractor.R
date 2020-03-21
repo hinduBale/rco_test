@@ -1,15 +1,17 @@
 ############################################################################################################################################################################################
 #Suppose this is the deparsed code that we recieve.
 ############################################################################################################################################################################################
-texts <-  list(paste("mtcars[ , 11]",
+texts <-  list(paste("points <- data.frame(x = rnorm(100), y = rnorm(100))",
                      "#This is a comment!!",
-                     "mtcars [[11]]",
-                     "mtcars$carb",
+                     "points[ ,2]",
+                     "points [[2]]",
+                     "points$y",
                      "yo <- 1",
                      "yo",
-                     "mtcars[[c(11)]]",
-                     ".subset2(mtcars, 11)",
+                     "mtcars[[c(2)]]",
+                     ".subset2(points, 11)",
                      sep = "\n"))
+
 
 ############################################################################################################################################################################################
 #We parse the above code/text through this method
@@ -65,7 +67,8 @@ dollar_colnum <- function(fpd, node_id)
 {
   dollar_loc_colnum <- fpd[fpd$parent == node_id & fpd$token == "'$'", ]
   replace_colname_dollar <- fpd[fpd$pos_id > dollar_loc_colnum$pos_id & fpd$parent == node_id & fpd$token == "SYMBOL", ]$text
-  return (which(colnames(mtcars) == replace_colname_dollar[1]))
+  dataset_name <- dollar_dataset(fpd, node_id)
+  return (which(colnames(dataset_name) == replace_colname_dollar[1]))
 }
 
 ###########################################################################################################################################################################################
@@ -262,3 +265,4 @@ for(m in seq_len(length(target_id)))
 
 optimized_text <- deparse_data(resultant_fpd)
 optimized_text
+

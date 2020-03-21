@@ -1,0 +1,88 @@
+---
+title: "rco-optimization-example-by-Rahul Saxena"
+author: "Rahul Saxena"
+date: "21/03/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Problem Statement: 
+
+Write a chunk of code that would result automatically optimized by applying the **rco::optimize_files** function, and compare its execution time (with *microbenchmark::microbenchmark*) against the non-optimized code. This should be submited as a vignette named *“rco-optimization-example-by-STUDENT.Rmd”.*
+
+Since the chunk of code was not specified, I went ahead with the code example provided at https://github.com/jcrodriguez1989/rco/ and used the *rco::optimize_files* function and *microbenchmark::microbenchmark* function on it.
+
+Below is the code, I originally had and the optimized code that I recieved as a result of using the *rco::optimize_files* function.
+
+## Original Code: 
+
+```{r original_code}
+og_code <- function()
+{
+  over_million <- 1
+  years_old <- 29
+  days_old <- 365 * years_old # leap years don't exist",
+  hours_old <- 24 * days_old
+  seconds_old <- 60 * 60 * hours_old
+  if (seconds_old > 10e6) {
+    over_million <- over_million + 1
+  } else {
+    over_million <- over_million - 1
+  }
+}
+```
+
+## Optimized Code {6 Number of Optimizations}
+
+The result is obtained in a file called *optimizes_filename.R* in the working directory, after the application of *rco::optimize_files("filename.R")*.
+
+```{r opt_code}
+opt_code <- function()
+{
+# leap years don't exist",
+2
+}
+```
+
+## Benchmarkings:
+
+Benchmarking the optimized and original functions, we get the following values:
+
+```{r benchmark}
+library("microbenchmark")
+microbenchmark(og_code(), opt_code(), times = 1000L)
+```
+
+
+## Plots:
+
+Comparing the benchmark plots of the original function and the optimized function using the ggplot2::autoplot() function, we get the following
+
+```{r farji, warning=FALSE}
+library("microbenchmark")
+library("ggplot2")
+autoplot(microbenchmark(og_code(), opt_code(), times = 1000L))
+```
+
+## Observations:
+
+I took a function called og_code() and optimized it using the rco::optimize_files() and it generated a function called opt_code(). It is a pretty impressive optimization, to say the least, because first it incorporates the constant propogation optimization and then proceeds to incorporate dead expression elimination.
+
+This optimization is reflected in the benchmarks of the two functions. On an average, the timings for the functions were (in nanoseconds):
+
+```{r table, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
+tabl <- "  
+| Function      | Time_Type     | Time(ns)|
+|---------------|:-------------:|--------:|
+| og_code()     | Mean          | 6829.7  |
+| opt_code()    | Mean          |   1513  |
+| og_code()     | Median        |    900  |
+| opt_code()    | Median        |    300  |
+"
+cat(tabl) 
+```
+
+**This level of speed-up(almost 200%) is almost surreal and has the potential to help a lot of R users(data scientists, statisticians, engineers, scholars, etc.) around the globe. I would definitely love to be part of development of such a package.**
