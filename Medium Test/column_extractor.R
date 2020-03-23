@@ -1,15 +1,14 @@
 ############################################################################################################################################################################################
 #Suppose this is the deparsed code that we recieve.
 ############################################################################################################################################################################################
-texts <-  list(paste("points <- data.frame(x = rnorm(100), y = rnorm(100))",
+texts <-  list(paste("mtcars[ ,11]",
                      "#This is a comment!!",
-                     "points[ ,2]",
-                     "points [[2]]",
-                     "points$y",
+                     "mtcars[[11]]",
+                     "mtcars$carb",
                      "yo <- 1",
                      "yo",
-                     "mtcars[[c(2)]]",
-                     ".subset2(points, 11)",
+                     "mtcars[[c(11)]]",
+                     ".subset2(mtcars, 11)",
                      sep = "\n"))
 
 
@@ -48,7 +47,7 @@ replace_text <- NULL
 #Function to check whether $ sign exists
 ############################################################################################################################################################################################
 
-has_dollar_sign <- function(fpd, node_id)
+has_dollar_sign <- function(fpd, node_id)`
 {
   test_dollar_df <- fpd[fpd$parent == node_id, ]
   dollar <- match("'$'", test_dollar_df$token)
